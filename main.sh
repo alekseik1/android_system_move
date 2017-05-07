@@ -36,7 +36,7 @@ cp -a ${APPS[$n]} $dest && rm -rf ${APPS[$n]} && echo "Successfully moved!"
 
 # Now, write files to addon.d
 for i in $files; do
-echo $i >> $ADDON_D_LIST
+echo $(echo $i | sed "s/\/data\/app/\/system\/priv-app/g") >> $ADDON_D_LIST
 done
 echo '#!/sbin/sh
 # 
