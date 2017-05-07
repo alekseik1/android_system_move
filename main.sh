@@ -9,11 +9,11 @@ ADDON_D_LIST="/system/addon.d/apps_in_system.list"
 
 echo "Welcome to the script! Choose an app you want to move:"
 # Getting apps list
-APPS=($(find $DATA_PATH -type d))
+APPS=($(find $DATA_PATH -type d -maxdepth 1))
 k=0
 for i in ${APPS[@]}; do 
-    echo $k --\> $i
-    k=$((k+1))
+echo "$k --\> $i"
+k=$((k+1))
 done
 
 echo "Choose an app (0-$((k-1))):"
@@ -36,7 +36,7 @@ cp -a ${APPS[$n]} $dest && rm -rf ${APPS[$n]} && echo "Successfully moved!"
 
 # Now, write files to addon.d
 for i in $files; do
-    echo $i >> $ADDON_D_LIST
+echo $i >> $ADDON_D_LIST
 done
 echo '#!/sbin/sh
 # 
@@ -45,19 +45,16 @@ echo '#!/sbin/sh
 # /system is formatted and reinstalled, then the files are restored.
 # Author: alekseik1
 #
-
 . /tmp/backuptool.functions
-
 list_files() {
 cat <<EOF
 ' > $ADDON_D_PATH
 for i in $(cat $ADDON_D_LIST); do
-    echo $i >> $ADDON_D_PATH
+echo $i >> $ADDON_D_PATH
 done
 
 echo 'EOF
 }
-
 case "$1" in
   backup)
     echo "STARTING TO BACKUP YOUR SYSTEM APPS"
