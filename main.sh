@@ -6,6 +6,7 @@
 DATA_PATH="/data/app"
 ADDON_D_PATH="/system/addon.d/99-apps_in_system.sh"
 ADDON_D_LIST="/system/addon.d/apps_in_system.list"
+SAVED_PACKAGES_PATH="/system/addon.d/pack_in_system.list"
 
 echo "Welcome to the script! Choose an app you want to move:"
 # Getting apps list
@@ -23,16 +24,27 @@ read n
 files=$(find ${APPS[$n]} -type f)
 #echo $files
 # Copying directory to system path
-echo
-echo "Will now move to:"
-
 dest=$(echo ${APPS[$n]} | sed "s/\/data\/app/\/system\/priv-app/g")
+
+echo
+echo "Will now move from:"
+echo ${APPS[$n]}
+echo "to:"
 echo $dest
+echo "Let's check if app is already in /system"
+if find $dest &>/dev/null
+then
+IS_ALREADY=1
+echo "App is already in /system. It seems like you have updated it via Google Play. Would you like to integrate updates to /system?"
+read INTEGRATE
+else
+IS_ALREADY=0
+echo "App is not in /system. You seem to move it for the first time."
 
 # Just in case it is ro-system
 mount -o remount,rw /system
 
-cp -a ${APPS[$n]} $dest && rm -rf ${APPS[$n]} && echo "Successfully moved!"
+cp -af ${APPS[$n]} $dest && rm -rf ${APPS[$n]} && echo "Successfully moved!"
 
 # Now, write files to addon.d
 for i in $files; do
@@ -40,7 +52,10 @@ echo $(echo $i | sed "s/\/data\/app/\/system\/priv-app/g") >> $ADDON_D_LIST
 done
 
 # Check Addon.d list for duplicates
-cat $ADDON_D_LIST | uniq > $ADDON_D_LIST
+cat $ADDON_D_LIST | uniq > $ADDON_D_LIST.tmp
+mv $ADDON_D_LIST.tmp $ADDON_D_LIST
+
+
 echo '#!/sbin/sh
 # 
 # /system/addon.d/99-apps_in_system.sh
