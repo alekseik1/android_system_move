@@ -25,6 +25,7 @@ files=$(find ${APPS[$n]} -type f)
 #echo $files
 # Copying directory to system path
 dest=$(echo ${APPS[$n]} | sed "s/\/data\/app/\/system\/priv-app/g")
+package=$(echo ${APPS[$n]} | sed "s/\/data\/app\///g")
 
 echo
 echo "Will now move from:"
@@ -36,15 +37,28 @@ if find $dest &>/dev/null
 then
 IS_ALREADY=1
 echo "App is already in /system. It seems like you have updated it via Google Play. Would you like to integrate updates to /system?"
+echo "[y/n]"
 read INTEGRATE
 else
 IS_ALREADY=0
 echo "App is not in /system. You seem to move it for the first time."
 
 # Just in case it is ro-system
+echo "Remounting /system as read-write..."
 mount -o remount,rw /system
+echo "Done!"
 
-cp -af ${APPS[$n]} $dest && rm -rf ${APPS[$n]} && echo "Successfully moved!"
+if [[ $IS_ALREADY -eq 0 ]]
+then
+  cp -af ${APPS[$n]} $dest && rm -rf ${APPS[$n]} && echo "Successfully moved!"
+elif [[ $IS_ALREADY -eq 1 ]] && [[ $INTEGRATE -eq "y" ]]
+then
+  echo "This option is not supported yet"
+  exit 0
+else
+  echo "Nothing to do, exiting..."
+  exit 0
+fi
 
 # Now, write files to addon.d
 for i in $files; do
